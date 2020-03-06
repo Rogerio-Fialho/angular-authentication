@@ -1,16 +1,14 @@
-FROM node:10.14
+FROM node:10 AS builder
 
 ADD ["package.json", "package-lock.json", "/sources/"]
 WORKDIR /sources
 RUN npm ci
-
-ADD ./ /sources
-
+COPY . .
 RUN npm run build
 
-FROM docker.totvs.io/thf/proxy
-COPY --from=0 /sources/dist /sources
+FROM nginx
+COPY --from=builder ./sources/dist/angular-authentication ./usr/share/nginx/html
 
-EXPOSE 4200
+EXPOSE 80
 
 CMD ["nginx", "-g", "daemon off;"]
